@@ -93,7 +93,7 @@ def check_installation():
 
 #DOWNLOADS SECTION
 
-#new version of check_installation?
+#new version of check_installation? #add section to downlaod guest additions aswell:
 def install_vbox():
     """
     Handles the installation of VirtualBox based on the operating system.
@@ -146,7 +146,7 @@ def download_vms(vmname, link, name, hash):
 
                 # Hash Verification
                 if verify_hash(download_path, hash):
-                    print(f"\nDownloaded VM {name} and saved at {download_path}")
+                    print(f"\nDownloaded virtual machine {name} and saved at {download_path}")
                     print("Hash verification successful! The file is correct.\n")
                     return True
                 else:
@@ -260,7 +260,7 @@ def create_virtual_machine(vm_name, disk_path):
         subprocess.run([vbox_path, "snapshot", vm_name, "take", vm_name], check=True)
         print(f"Snapshot '{vm_name}' taken successfully.")
 
-        print(f"VM '{vm_name}' is registered, settings configured, SATA controller added, and disk attached successfully.")
+        print(f"Virtual Machine '{vm_name}' is registered, settings configured, SATA controller added, and disk attached successfully.")
 
         print(f"Virtual Machine {vm_name} successfuly created")
 
@@ -314,10 +314,12 @@ def CLI():
             "download_hash": "104D559174F8D1325A29A9312F051F1750A78611F187422ED99B2DBA19138192"
         }
     }
+    
+    print("\nYou can choose options by moving arrows up and down, and pressing enter \n\n")
 
     # Prompt user to select a VM from the list
     vm_questions = [
-        inquirer.List("vm_choice", message="Select a VM", choices=vm_list)
+        inquirer.List("vm_choice", message="Select a Virtual Machine", choices=vm_list)
     ]
     answers = inquirer.prompt(vm_questions)
     selected_vm = answers["vm_choice"]
