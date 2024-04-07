@@ -312,7 +312,8 @@ def CLI():
             "download_link": "https://drive.google.com/uc?export=download&id=1sqtTIKq_iHcugRoSJCqG0smnwLt3zaLN",
             "download_name": "ubuntu_server.vmdk",
             "download_hash": "104D559174F8D1325A29A9312F051F1750A78611F187422ED99B2DBA19138192"
-        }
+        },
+        "Exit Tool": { }
     }
     
     print("\nYou can choose options by moving arrows up and down, and pressing enter \n\n")
@@ -324,62 +325,72 @@ def CLI():
     answers = inquirer.prompt(vm_questions)
     selected_vm = answers["vm_choice"]
 
+    if selected_vm == "Exit Tool":
+        print("You have exited the out of the tool\n")
+        sys.exit()
+    else:
+    
+        # Proceed with download and configuration based on user selection
+        selected_vm_info = vm_list[selected_vm]
+        download_vm_name = selected_vm
+        download_link = selected_vm_info["download_link"]
+        download_name = selected_vm_info["download_name"]
+        download_hash = selected_vm_info["download_hash"]
+        download_vms(download_vm_name, download_link, download_name, download_hash)
 
-    # Proceed with download and configuration based on user selection
-    selected_vm_info = vm_list[selected_vm]
-    download_vm_name = selected_vm
-    download_link = selected_vm_info["download_link"]
-    download_name = selected_vm_info["download_name"]
-    download_hash = selected_vm_info["download_hash"]
-    download_vms(download_vm_name, download_link, download_name, download_hash)
+        # User name for the VM and validation loop
+        while attempts < max_attempts:
+            get_name_prompt = inquirer.Text("vm_name_pr", message="Enter a name for your VM")
+            name_prompt_ans = inquirer.prompt([get_name_prompt])
+            user_vm_name = name_prompt_ans["vm_name_pr"].strip() 
 
-    # User name for the VM and validation loop
-    while attempts < max_attempts:
-        get_name_prompt = inquirer.Text("vm_name_pr", message="Enter a name for your VM")
-        name_prompt_ans = inquirer.prompt([get_name_prompt])
-        user_vm_name = name_prompt_ans["vm_name_pr"].strip() 
+            if user_vm_name:
+                break
+            else:
+                print("Please enter a valid name.")
+                attempts += 1
 
         if user_vm_name:
-            break
+            print(f"\nYou have selected {selected_vm} and the name you have chosen is {user_vm_name}.\n")
         else:
-            print("Please enter a valid name.")
-            attempts += 1
+            print("Maximum attempts reached. Exiting Virtualize@Home")
+            sys.exit()
 
-    if user_vm_name:
-        print(f"\nYou have selected {selected_vm} and the name you have chosen is {user_vm_name}.\n")
-    else:
-        print("Maximum attempts reached. Exiting Virtualize@Home")
-        sys.exit()
+        # ask them if they want to proceed
+        proceed_prompt = inquirer.Confirm("proceed", message="Do you wish to proceed?")
+        proceed_answer = inquirer.prompt([proceed_prompt])
 
-    # ask them if they want to proceed
-    proceed_prompt = inquirer.Confirm("proceed", message="Do you wish to proceed?")
-    proceed_answer = inquirer.prompt([proceed_prompt])
+        if proceed_answer["proceed"]:
+            user_name = user_vm_name
+            user_download_name = download_name
+            create_virtual_machine(user_name, user_download_name)
+        else:
+            print("\nNo action detected, Exiting Virtualize@Home")
+            sys.exit()
 
-    if proceed_answer["proceed"]:
-        user_name = user_vm_name
-        user_download_name = download_name
-        create_virtual_machine(user_name, user_download_name)
-    else:
-        print("\nNo action detected, Exiting Virtualize@Home")
-        sys.exit()
+        # Optionally, open VirtualBox after the VM is set up
+        print("\n") #empty space [inquirer does not handle \n well]
+        open_vbox_prompt = inquirer.Confirm("open_vbox", message="Do you wish to open VirtualBox?", default=True)
+        open_vbox_answer = inquirer.prompt([open_vbox_prompt])
 
-    # Optionally, open VirtualBox after the VM is set up
-    print("\n") #empty space [inquirer does not handle \n well]
-    open_vbox_prompt = inquirer.Confirm("open_vbox", message="Do you wish to open VirtualBox?", default=True)
-    open_vbox_answer = inquirer.prompt([open_vbox_prompt])
-
-    if open_vbox_answer["open_vbox"]:
-        print("\nOpening VirtualBox")
-        open_virtualbox()
-    else:
-        print("\nYou have chosen not to open VirtualBox, please open it manually through your system")
-
-    #WARNING MESSAGE
-    print("\n\nWARNING! WHEN DELETING VIRTUAL MACHINES FROM VIRTUALBOX PLEASE CLICK ON 'REMOVE ONLY'")
-    print("CLICKING ON DELETE ALL FILES HAS THE CHANCE TO DELETE THE VIRTUAL MACHINE DISK WHICH WILL REQUIRE YOU TO GO THROUGH THE DOWNLOAD PROCESS AGAIN")
+        if open_vbox_answer["open_vbox"]:
+            print("\nOpening VirtualBox\n")
+            open_virtualbox()
+        else:
+            print("\nYou have chosen not to open VirtualBox, please open it manually through your system\n")
 
 
-#new section not yet documented. 
+        warning_message = """
+    ⚠️  WARNING: When deleting virtual machines from VirtualBox, ensure you select 'Remove Only' and proceed to manually delete the files.
+    Selecting 'Delete All Files' may result in the deletion of the virtual machine disk,
+    requiring you to repeat the download process. Exercise caution, this may or may not apply to your system!
+                    """
+
+        #WARNING MESSAGE
+        print(warning_message)
+
+
+    #new section not yet documented. 
 def check_terms():
     """Checks if the user has agreed to the terms of use and manages the config file."""
     script_dir = os.path.dirname(__file__) 
