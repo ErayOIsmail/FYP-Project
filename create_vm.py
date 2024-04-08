@@ -9,7 +9,7 @@ import inquirer
 import requests
 import gdown
 from gdown.exceptions import FileURLRetrievalError
-import time
+import time # will be used to record how long it takes to create vm's and compare the findings later to Fur or Spichkova.
 import sys
 import json
 import hashlib
@@ -104,7 +104,8 @@ def install_vbox():
         print("Detected Windows OS.")
         success = windows_download()
         if not success:
-            print("Failed to download VirtualBox. Please download and install manually.")
+            print("Failed to download VirtualBox. Please download and install manually and re-run the program.")
+            sys.exit()
     elif os_type == "Linux":
         print("Detected Linux OS.")
         try:
@@ -468,10 +469,16 @@ def open_virtualbox():
 
 
 def main():
+    record_findings = time.time()
+
     check_terms()
     welcome_message()
     check_installation()
     CLI()
+    final_findings = time.time()
+
+    total_time_taken = final_findings - record_findings
+    print(f"Total amount of time taken to go through the virtual machine creation procedure is: {total_time_taken} seconds.")
     #GUI()
 
     #add hashging to download funciton
