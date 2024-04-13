@@ -1,4 +1,4 @@
-‘Virtualize@Home’ Guidelines
+<h1>‘Virtualize@Home’ Guidelines</h1>
 The ‘Virtualize@Home’ project is designed to simplify the virtual machine creation for users who use it legitimately for educational, practical, and personal use. By using the tool, you agree to follow the tool’s guidelines:
 
 Ethics
