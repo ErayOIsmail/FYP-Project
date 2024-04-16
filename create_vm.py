@@ -15,10 +15,8 @@ import json
 import hashlib
 
 CONFIG_FILE = "vm_config.json" 
-#CHECK SECTION
 
 #USED TO FIND VBOXMANAGE WHICH IS USED TO MAKE VIRTUALBOX EXECUTE STUFF
-
 def find_vboxmanage():
     """
     Attempts to find the VBoxManage command's path on the system to control VirtualBox.
@@ -28,7 +26,7 @@ def find_vboxmanage():
         subprocess.run(["VBoxManage", "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         return "VBoxManage"
     except FileNotFoundError:
-        # List of common paths where VBoxManage can be located on various operating systems.
+        # list of common paths where VBoxManage can be located on various operating systems.
         possible_paths = [
             "C:\\Program Files\\Oracle\\VirtualBox\\VBoxManage.exe",
             "/usr/bin/VBoxManage",
@@ -43,13 +41,13 @@ def find_vboxmanage():
 def check_platform():
     """
     Determines the operating system platform.
-    Returns a string identifier for the platform.
+    Returns the OS system.
+    Not used for now, maybe in future versions
     """
     return sys.platform
 
 
 # check if the required folder for the virtualmachines is made
-
 def check_vmfolder_exists(): 
     """
     Checks if the folder for storing virtual machine downloads exists.
@@ -62,7 +60,6 @@ def check_vmfolder_exists():
         return False
 
 #check if the path to the vm exists? this will be integrated into download vms place
-
 def check_vm_exists(vmpath): 
     """
     Checks if a virtual machine already exists at the specified path.
@@ -91,9 +88,6 @@ def check_installation():
             print("Installation skipped. Exiting.")
             sys.exit()
 
-#DOWNLOADS SECTION
-
-#new version of check_installation? #add section to downlaod guest additions aswell:
 def install_vbox():
     """
     Handles the installation of VirtualBox based on the operating system.
@@ -107,7 +101,7 @@ def install_vbox():
             print("Failed to download VirtualBox. Please download and install manually and re-run the program.")
             sys.exit()
     elif os_type == "Linux":
-        print("Detected Linux OS.")
+        print("Detected Linux OS. please enter your password to proceed with the download\n")
         try:
             subprocess.run(["sudo", "apt-get", "install", "-y", "virtualbox"], check=True)
             print("VirtualBox installed successfully.")
@@ -129,7 +123,6 @@ def download_vms(vmname, link, name, hash):
         os.makedirs(path_to_folder)
 
     if check_vm_exists(name):
-        #print(f"The VM {name} already exists in the download folder.")
         return True
 
     while True:
@@ -140,12 +133,12 @@ def download_vms(vmname, link, name, hash):
         ]
 
         answer = inquirer.prompt(questions)
-
-        if answer['download_question']:
+ 
+        if answer['download_question']: #if the answer is Y, attempt to download
             try:
-                gdown.download(link, download_path, quiet=False)
+                gdown.download(link, download_path, quiet=False) #
 
-                # Hash Verification
+                # hash Verification
                 if verify_hash(download_path, hash):
                     print(f"\nDownloaded virtual machine {name} and saved at {download_path}")
                     print("The file has been verified! Continuening to next step \n")
@@ -155,22 +148,21 @@ def download_vms(vmname, link, name, hash):
                     print("The file may be corrupt or tampered with. Deleting the file.")
                     os.remove(download_path)
                     print("Hash verification failed.")
-            except FileURLRetrievalError as e:
-                print("\nFailed to retrieve the file URL. This could be due to permission issues or too many accesses.")
-                print("Please try again later.")
+            except FileURLRetrievalError as e: #stop the download in the event of an invalid URL or no internet
+                print("\nFailed to retrieve the file URL. Please try again later.")
                 print(f"\nError message: {e}")
             
-            # Retry prompt
+            # provide them with a retry option, providing more accessibility and usability
             retry_questions = [
                 inquirer.Confirm('retry_question', message="Do you want to retry the download?", default=False),
             ]
             retry_answer = inquirer.prompt(retry_questions)
-            if not retry_answer['retry_question']:
+            if not retry_answer['retry_question']: # if they decide not to retry the download, inform them
                 print("Exiting download process. Please try again later or email me at: \nerayoismail@gmail.com")
-                sys.exit()  # Exits the script
+                sys.exit()  # exits the tool
         else:
             print("\nDownload canceled.")
-            sys.exit()  # Exits the script if the download is canceled by the user
+            sys.exit()  # exits the tool if the download is canceled by the user
             
 
 def verify_hash(file_path, expected_hash):
@@ -185,9 +177,9 @@ def verify_hash(file_path, expected_hash):
 
 
 
-def windows_download(): #fix this
+def windows_download(): 
     """
-    Downloads the VirtualBox installer for Windows from the official URL and saves it to the user's Downloads folder.
+    Downloads the VirtualBox .exe installer for Windows from the official downloads page and saves it to the user's downloads folder.
     Exits the script if the download fails or after successfully saving the file.
     """
     url = "https://download.virtualbox.org/virtualbox/7.0.12/VirtualBox-7.0.12-159484-Win.exe"
@@ -195,11 +187,11 @@ def windows_download(): #fix this
     downloads_folder = os.path.join(os.path.expanduser("~"), "Downloads")
     save_path = os.path.join(downloads_folder, file_name)
 
-    print(f"Downloading VirtualBox installer to {save_path}...")
+    print(f"Downloading VirtualBox installer to {save_path} ")
     
     try:
         response = requests.get(url)
-        response.raise_for_status()  # This will raise an HTTPError if the download failed
+        response.raise_for_status()  # this will raise an error if the download failed
 
         with open(save_path, "wb") as f:
             f.write(response.content)
@@ -207,12 +199,11 @@ def windows_download(): #fix this
         print("The VirtualBox installer has been successfully downloaded to your Downloads folder.")
     except requests.HTTPError as e:
         print(f"Download failed with HTTP error: {e}")
-        sys.exit(1)
+        sys.exit()
     except requests.RequestException as e:
         print(f"Download failed with error: {e}")
-        sys.exit(1)
+        sys.exit()
 
-#\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 def attach_additional_iso():
     """
@@ -230,32 +221,32 @@ def create_virtual_machine(vm_name, disk_path):
     Creates and configures a new virtual machine using VBoxManage.
 
     - vm_name: Name of the virtual machine, provided from the user
-    - disk_path: Path to the virtual disk file (.vmdk) to be attached to the VM, .
+    - disk_path: Path to the virtual disk file (.vmdk) to be attached to the VM
 
-    Handles vm creation, memory and cpu allocation, storage configuration, network setup and snapshoting.
+    Handles the vm creation, memory and cpu allocation, storage configuration, network setup and snapshoting of the tool
     """
     vbox_path = find_vboxmanage()
     try:
-        # Register the VM with VirtualBox
+        # register the VM with VirtualBox
         subprocess.run([vbox_path, "createvm", "--name", vm_name, "--register"], check=True)
         
-        # Configure VM's CPU, memory, and video memory
+        # configure VM's CPU, memory, and video memory
         subprocess.run([vbox_path, "modifyvm", vm_name, "--memory", "2048", "--cpus", "2", "--vram", "128"], check=True)
         print("CPU cores: 2\nMemory: 2048MB\nVRAM: 128MB")
         
-        # Attach a SATA storage controller
+        # attach a SATA storage controller
         subprocess.run([vbox_path, "storagectl", vm_name, "--name", "SATA", "--add", "sata", "--controller", "IntelAHCI"], check=True)
         
-        # Attach the disk to the VM
+        # attach the disk to the VM
         downloads_folder = os.path.join(os.path.expanduser("~"), "VMDownloads")
         save_path = os.path.join(downloads_folder, disk_path)
         subprocess.run([vbox_path, "storageattach", vm_name, "--storagectl", "SATA", "--port", "0", "--device", "0", "--type", "hdd", "--medium", save_path], check=True)
         
-        # Configure network adapter to use NAT
+        # configure network adapter to use NAT
         subprocess.run([vbox_path, "modifyvm", vm_name, "--nic1", "nat"], check=True)
         print(f"Network adapter created and set to NAT for VM '{vm_name}'.")
 
-        # Take an initial snapshot of the VM
+        # take an initial snapshot of the VM
         subprocess.run([vbox_path, "snapshot", vm_name, "take", vm_name], check=True)
         print(f"Snapshot '{vm_name}' taken successfully.")
 
@@ -269,7 +260,7 @@ def create_virtual_machine(vm_name, disk_path):
 
 def welcome_message():
     """
-    Display virtualize@HOme
+    Display virtualize@HOme logo
     """
     message = """
             *********************************************
@@ -280,9 +271,6 @@ def welcome_message():
             """
     print(message)
 
-#for the above, figure out how to set network settings, cpu, memory, OS TYPE, macaddress, attach any tools?
-
-#make snapshots aswell
 
 def CLI():
     """
@@ -295,7 +283,7 @@ def CLI():
     attempts = 0
     user_vm_name = None
 
-    # Predefined list of virtual machines with their download links and hashes
+    # ppredefined list of virtual machines with their download links and hashes
     vm_list = {
         "Linux Mint": {
             "download_link": "https://drive.google.com/uc?export=download&id=1P94IrsWHJmEOyIiiSHB3kf9DhnvmiSJO",
@@ -317,7 +305,7 @@ def CLI():
     
     print("\nYou can choose options by moving arrows up and down, and pressing enter \n\n")
 
-    # Prompt user to select a VM from the list
+    # prompt user to select a VM from the list
     vm_questions = [
         inquirer.List("vm_choice", message="Select a Virtual Machine", choices=vm_list)
     ]
@@ -329,7 +317,7 @@ def CLI():
         sys.exit()
     else:
     
-        # Proceed with download and configuration based on user selection
+        # proceed with download and configuration based on user selection
         selected_vm_info = vm_list[selected_vm]
         download_vm_name = selected_vm
         download_link = selected_vm_info["download_link"]
@@ -337,7 +325,7 @@ def CLI():
         download_hash = selected_vm_info["download_hash"]
         download_vms(download_vm_name, download_link, download_name, download_hash)
 
-        # User name for the VM and validation loop
+        # user name for the VM and validation loop
         while attempts < max_attempts:
             get_name_prompt = inquirer.Text("vm_name_pr", message="Enter a name for your VM")
             name_prompt_ans = inquirer.prompt([get_name_prompt])
@@ -358,8 +346,6 @@ def CLI():
         # ask them if they want to proceed
         proceed_prompt = inquirer.Confirm("proceed", message="Do you wish to proceed?", )
         proceed_answer = inquirer.prompt([proceed_prompt])
-        #proceed_prompt=input("[?] Do you wish to proceed? (Y/N): ")
-        #proceed_answer = proceed_prompt.lower()
 
         if proceed_answer["proceed"]:
             user_name = user_vm_name
@@ -446,10 +432,10 @@ def get_agreement(config_path):
 def open_virtualbox():
     vbox_path = find_vboxmanage()
     if vbox_path:
-        # Get the directory where VBoxManage resides
+        # get virtualbox directory
         vbox_install_dir = os.path.dirname(vbox_path)
 
-        # Construct the likely path to the VirtualBox GUI executable
+        # check the likely paths of the virtualbox executable
         if platform.system() == "Windows":
             vbox_exe = os.path.join(vbox_install_dir, "VirtualBox.exe")
         elif platform.system() == "Darwin":  # apparently MacOS
@@ -460,7 +446,7 @@ def open_virtualbox():
             print("Application not found / System not supported")
 
         
-        # Try to launch VirtualBox
+        # try to launch VirtualBox
         try:
             subprocess.Popen([vbox_exe]) 
         except Exception as e:
@@ -478,15 +464,10 @@ def main():
     CLI()
     final_findings = time.time()
 
-    total_time_taken = final_findings - record_findings
+    total_time_taken = round(final_findings - record_findings, 2)
+    
     print(f"Total amount of time taken to go through the virtual machine creation procedure is: {total_time_taken} seconds.")
-    #GUI()
 
-    #add hashging to download funciton
-    #fix the virtualbox installation thing
-    #look over the program and see waht can be done
-
-    #alot of testing stuff have been removed just because it confused me more and more
 if __name__ == "__main__":
     try:
         main() 
@@ -494,6 +475,3 @@ if __name__ == "__main__":
         print("\nProgram interrupted by the user. Exiting tool.")
     except Exception as e:
         print(f"An error occurred: {e}")
-
-
-#https://stackoverflow.com/questions/60350358/how-do-i-resolve-the-character-device-dev-vboxdrv-does-not-exist-error-in-ubu
