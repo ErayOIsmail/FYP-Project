@@ -400,7 +400,7 @@ def check_terms():
 
 
 def display_terms():
-    terms_and_conditions_guidelines = "https://github.com/ErayOIsmail/FYP-Project/blob/main/guidelines_and_terms_of_condition"
+    terms_and_conditions_guidelines = "https://github.com/ErayOIsmail/Virtualize-at-Home-project/blob/main/guidelines.md"
     print("Please read our terms and conditions: you can click the link below if your terminal supports it, or copy and paste the URL into your web browser.\n")
     print(terms_and_conditions_guidelines)
     #print("\nIf you agree to these terms")
